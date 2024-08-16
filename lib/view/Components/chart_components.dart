@@ -11,7 +11,19 @@ class ChartComponents extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Value plot", style: Theme.of(context).textTheme.headlineSmall),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Value plot", style: Theme.of(context).textTheme.headlineSmall),
+            FilledButton.icon(
+              onPressed: () {
+                // controller.add
+              },
+              label: const Text("Add"),
+              icon: const Icon(Icons.add),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         Expanded(
           child: SfCartesianChart(
@@ -22,21 +34,21 @@ class ChartComponents extends StatelessWidget {
               enableAutoIntervalOnZooming: false,
               majorGridLines: MajorGridLines(color: Colors.transparent),
             ),
-            legend: Legend(
-              isVisible: controller.chartConfiguration.showLeged,
-              position: LegendPosition.top,
-            ),
-            tooltipBehavior: TooltipBehavior(enable: true),
-            series: List.generate(
-              controller.chartsValues.length,
-              (int index) => LineSeries<double, int>(
-                animationDuration: 0,
-                name: controller.chartConfiguration.names[index],
-                dataSource: controller.chartsValues[index].toList(),
-                xValueMapper: (double data, int index) => index,
-                yValueMapper: (double data, int index) => data,
-              ),
-            ),
+            // legend: Legend(
+            //   isVisible: controller.chartConfiguration.showLeged,
+            //   position: LegendPosition.top,
+            // ),
+            // tooltipBehavior: TooltipBehavior(enable: true),
+            // series: List.generate(
+            //   controller.chartsValues.length,
+            //   (int index) => LineSeries<double, int>(
+            //     animationDuration: 0,
+            //     name: controller.chartConfiguration.names[index],
+            //     dataSource: controller.chartsValues[index].toList(),
+            //     xValueMapper: (double data, int index) => index,
+            //     yValueMapper: (double data, int index) => data,
+            //   ),
+            // ),
             // series: [
             //   LineSeries<double, int>(
             //     animationDuration: 0,

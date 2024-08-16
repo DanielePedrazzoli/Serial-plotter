@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:serial_comunication/controller/serial_controller.dart';
-import 'package:serial_comunication/view/Components/chart_components.dart';
 import 'package:serial_comunication/view/Components/info_connection.dart';
-import 'package:serial_comunication/view/Components/serial_comunication.dart';
 import 'package:serial_comunication/view/pages/info_pages.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,14 +14,11 @@ class _HomePageState extends State<HomePage> {
   SerialController connectionController = SerialController();
   TextEditingController inputController = TextEditingController();
 
-  double chart_1_value = 0;
-  int chart_3_value = 0;
   int steps = 0;
 
   @override
   void initState() {
     super.initState();
-    connectionController.scanPorts();
   }
 
   void _showInfo() {
@@ -52,21 +47,40 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               InfoConnection(controller: connectionController),
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 75,
-                      child: ChartComponents(controller: connectionController),
-                    ),
-                    const Spacer(),
-                    Expanded(
-                      flex: 25,
-                      child: SerialComunication(controller: connectionController),
-                    ),
-                  ],
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Value plot", style: Theme.of(context).textTheme.headlineSmall),
+                  FilledButton.icon(
+                    onPressed: () {},
+                    label: const Text("Add"),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
+              // Expanded(
+              //   child: ListView.builder(
+              //     itemBuilder: (context, index) => Chart(controller: connectionController, id: index),
+              //     itemCount: connectionController.chartsValues.length,
+              //   ),
+              // ),
+              // Expanded(
+              //   child: Row(
+              //     children: [
+
+              //       Expanded(
+              //         flex: 75,
+              //         child: ChartComponents(controller: connectionController),
+              //       ),
+              //       const Spacer(),
+              //       // Expanded(
+              //       //   flex: 25,
+              //       //   child: SerialComunication(controller: connectionController),
+              //       // ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         ),

@@ -34,7 +34,7 @@ class _SerialComunicationState extends State<SerialComunication> {
                       actions: [
                         OutlinedButton(
                           onPressed: () {
-                            widget.controller.clearHistory();
+                            // widget.controller.clearHistory();
                             Navigator.pop(context);
                           },
                           child: const Text("Conferma"),
@@ -68,16 +68,16 @@ class _SerialComunicationState extends State<SerialComunication> {
                           right: BorderSide(color: Theme.of(context).colorScheme.outline),
                         ),
                       ),
-                      child: ListView.separated(
-                        padding: const EdgeInsets.all(8),
-                        separatorBuilder: (context, index) => const SizedBox(height: 8),
-                        itemCount: widget.controller.messages.length,
-                        itemBuilder: (context, index) => Text(
-                          widget.controller.messages[index],
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        shrinkWrap: true,
-                      ),
+                      // child: ListView.separated(
+                      //   padding: const EdgeInsets.all(8),
+                      //   separatorBuilder: (context, index) => const SizedBox(height: 8),
+                      //   itemCount: widget.controller.messages.length,
+                      //   itemBuilder: (context, index) => Text(
+                      //     widget.controller.messages[index],
+                      //     style: Theme.of(context).textTheme.bodySmall,
+                      //   ),
+                      //   shrinkWrap: true,
+                      // ),
                     ),
                   ),
                   TextField(

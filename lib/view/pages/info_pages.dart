@@ -33,7 +33,7 @@ class Info extends StatelessWidget {
                 "\n - valori `float` (con caratterese decimale il `.`)"
                 "\n - Valore `int`"
                 "I caratteri di `\\n` e `\\r` vengono automaticamente eliminati dal messaggio se presenti"
-                "\nSeparare i valori usando il carattere `${controller.chartConfiguration.valueSeparator}`"
+                // "\nSeparare i valori usando il carattere `${controller.chartConfiguration.valueSeparator}`"
                 "\n\nEsempio:\n`--plot:1.672,2,3.0`",
           ),
           const SizedBox(height: 8),

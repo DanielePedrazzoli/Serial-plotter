@@ -9,11 +9,11 @@ class InfoConnection extends StatelessWidget {
     if (!controller.isConnected) {
       return IconButton(
         onPressed: () {
-          var result = controller.connect();
-          if (result == true) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Connected to ${controller.port!.name}")));
-            return;
-          }
+          // var result = controller.connect();
+          // if (result == true) {
+          //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Connected to ${controller.port!.name}")));
+          //   return;
+          // }
 
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Connection failed")));
         },
@@ -46,30 +46,26 @@ class InfoConnection extends StatelessWidget {
               children: [
                 Text("Connected port", style: Theme.of(context).textTheme.bodyLarge),
                 const SizedBox(width: 8),
-                DropdownMenu(
-                  onSelected: (value) => controller.selectedPort = value ?? "",
-                  dropdownMenuEntries: controller.portsAvaiable.map((e) => DropdownMenuEntry<String>(value: e, label: e)).toList(),
-                ),
-                IconButton(
-                  onPressed: () => controller.scanPorts(),
-                  icon: const Icon(Icons.sync),
-                  tooltip: "Refresh",
-                ),
+                // DropdownMenu(
+                //   onSelected: (value) => controller.selectedPort = value ?? "",
+                //   dropdownMenuEntries: controller.portsAvaiable.map((e) => DropdownMenuEntry<String>(value: e, label: e)).toList(),
+                // )
+
                 _connectButton(context),
               ],
             ),
             const SizedBox(width: 48),
-            Row(
-              children: [
-                Text("Baud rate", style: Theme.of(context).textTheme.bodyLarge),
-                const SizedBox(width: 8),
-                DropdownMenu(
-                  onSelected: (value) => controller.selectedBaudRate = value ?? 9600,
-                  initialSelection: 115200,
-                  dropdownMenuEntries: controller.avaiableBoutRate.map((e) => DropdownMenuEntry<int>(value: e, label: e.toString())).toList(),
-                ),
-              ],
-            ),
+            // Row(
+            //   children: [
+            //     Text("Baud rate", style: Theme.of(context).textTheme.bodyLarge),
+            //     const SizedBox(width: 8),
+            //     DropdownMenu(
+            //       onSelected: (value) => controller.selectedBaudRate = value ?? 9600,
+            //       initialSelection: 115200,
+            //       dropdownMenuEntries: controller.avaiableBoutRate.map((e) => DropdownMenuEntry<int>(value: e, label: e.toString())).toList(),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),

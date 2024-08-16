@@ -1,52 +1,27 @@
 import 'dart:typed_data';
 
-import 'package:circular_buffer/circular_buffer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
-import 'package:serial_comunication/model/chart_configuration.dart';
+import 'package:serial_comunication/controller/chart_controller.dart';
 
 class SerialController with ChangeNotifier {
   SerialController();
   SerialPort? _port;
   SerialPortReader? _reader;
   bool _isConnected = false;
-  List<String> _ports = [];
   bool get isConnected => _isConnected;
-  List<String> get portsAvaiable => _ports;
-  List<int> get avaiableBoutRate => [4800, 9600, 19200, 38400, 57600, 115200];
-
-  int _selectedBaudRate = 115200;
-  String selectedortName = '';
 
   SerialPort? get port => _port;
 
-  List<String> messages = [];
-  List<CircularBuffer<double>> chartsValues = [];
-  ChartConfiguration chartConfiguration = ChartConfiguration();
+  ChartController? _chartController;
 
-  void clearHistory() {
-    messages.clear();
-    notifyListeners();
+  set chartController(ChartController? value) {
+    _chartController = value;
   }
 
-  void scanPorts() {
-    _ports = SerialPort.availablePorts;
-    notifyListeners();
-  }
-
-  set selectedBaudRate(int newValue) {
-    _selectedBaudRate = newValue;
-    notifyListeners();
-  }
-
-  set selectedPort(String newValue) {
-    selectedortName = newValue;
-    notifyListeners();
-  }
-
-  bool connect() {
-    _port = SerialPort(selectedortName);
-    _port!.config.baudRate = _selectedBaudRate;
+  bool connect(String portName, int baudRate) {
+    _port = SerialPort(portName);
+    _port!.config.baudRate = baudRate;
     var openResult = _port!.openReadWrite();
 
     if (openResult == false) {
@@ -57,28 +32,16 @@ class SerialController with ChangeNotifier {
     _reader!.stream.listen(onRecivedData);
 
     _isConnected = true;
-    notifyListeners();
     return true;
   }
 
   void onRecivedData(Uint8List? data) {
     if (data == null || data.isEmpty) return;
 
-    var message = String.fromCharCodes(data);
-
-    if (_isConfigMessage(message)) {
-      _decodeConfig(message);
-      messages.add(message);
-      notifyListeners();
-      return;
+    if (_chartController != null) {
+      _chartController!.pushNewValue(String.fromCharCodes(data));
     }
 
-    if (_isPlotMessage(message)) {
-      __decodePlotValues(message);
-      notifyListeners();
-      return;
-    }
-    messages.add(message);
     notifyListeners();
   }
 
@@ -89,6 +52,7 @@ class SerialController with ChangeNotifier {
 
     _port!.dispose();
     _isConnected = false;
+    _chartController = null;
     notifyListeners();
   }
 
@@ -97,55 +61,38 @@ class SerialController with ChangeNotifier {
 
     _port!.write(Uint8List.fromList(message.codeUnits));
 
-    messages.add(message);
     notifyListeners();
   }
 
-  bool _isConfigMessage(String message) {
-    if (message.startsWith("--config-plot:")) {
-      return true;
-    }
+  // void _decodeConfig(String configMessge) {
+  //   if (!configMessge.startsWith("--config-plot:")) return;
 
-    return false;
-  }
+  //   var configValue = configMessge.replaceFirst("--config-plot:", "").replaceAll(RegExp(r"\r|\n"), "");
 
-  bool _isPlotMessage(String message) {
-    if (message.startsWith("--plot:")) {
-      return true;
-    }
+  //   var names = configValue.split(",");
 
-    return false;
-  }
+  //   for (String name in names) {
+  //     CircularBuffer<double> buffer = CircularBuffer(chartConfiguration.maxValueCount);
+  //     buffer.addAll(List.filled(chartConfiguration.maxValueCount, 0));
+  //     chartsValues.add(buffer);
+  //     chartConfiguration.names.add(name);
+  //   }
 
-  void _decodeConfig(String configMessge) {
-    if (!configMessge.startsWith("--config-plot:")) return;
+  //   chartConfiguration.showLeged = true;
+  // }
 
-    var configValue = configMessge.replaceFirst("--config-plot:", "").replaceAll(RegExp(r"\r|\n"), "");
+  // void __decodePlotValues(String message) {
+  //   List<String> values = message.replaceAll("--plot:", "").split(chartConfiguration.valueSeparator);
 
-    var names = configValue.split(",");
+  //   List<double> parsedValues = values.map((e) => double.parse(e)).toList();
 
-    for (String name in names) {
-      CircularBuffer<double> buffer = CircularBuffer(chartConfiguration.maxValueCount);
-      buffer.addAll(List.filled(chartConfiguration.maxValueCount, 0));
-      chartsValues.add(buffer);
-      chartConfiguration.names.add(name);
-    }
+  //   // if value are missing then are considered 0
+  //   if (parsedValues.length < chartConfiguration.names.length) {
+  //     parsedValues.addAll(List.filled(chartConfiguration.names.length - parsedValues.length, 0));
+  //   }
 
-    chartConfiguration.showLeged = true;
-  }
-
-  void __decodePlotValues(String message) {
-    List<String> values = message.replaceAll("--plot:", "").split(chartConfiguration.valueSeparator);
-
-    List<double> parsedValues = values.map((e) => double.parse(e)).toList();
-
-    // if value are missing then are considered 0
-    if (parsedValues.length < chartConfiguration.names.length) {
-      parsedValues.addAll(List.filled(chartConfiguration.names.length - parsedValues.length, 0));
-    }
-
-    for (int i = 0; i < chartConfiguration.names.length; i++) {
-      chartsValues[i].add(parsedValues[i]);
-    }
-  }
+  //   for (int i = 0; i < chartConfiguration.names.length; i++) {
+  //     chartsValues[i].add(parsedValues[i]);
+  //   }
+  // }
 }
