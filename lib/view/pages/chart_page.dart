@@ -1,12 +1,9 @@
-import 'dart:async';
-import 'dart:math';
-import 'dart:typed_data';
-
 import 'package:context_menus/context_menus.dart';
 import 'package:flutter/material.dart';
 import 'package:serial_comunication/controller/chart_controller.dart';
 import 'package:serial_comunication/controller/serial_controller.dart';
 import 'package:serial_comunication/view/Components/Chart/chart.dart';
+import 'package:serial_comunication/view/Components/ExportComponents.dart';
 import 'package:serial_comunication/view/Components/baudrate/baudrate_selector.dart';
 
 class ChartPage extends StatefulWidget {
@@ -21,7 +18,7 @@ class _ChartPageState extends State<ChartPage> {
   ChartController chartController = ChartController();
 
   int i = 0;
-  Timer? debugTimer;
+  // Timer? debugTimer;
 
   bool disablePageScroll = false;
 
@@ -32,27 +29,42 @@ class _ChartPageState extends State<ChartPage> {
     widget.controller.chartController = chartController;
     chartController.addNewChart();
 
-    debugTimer = Timer.periodic(const Duration(milliseconds: 50), (Timer t) {
-      widget.controller.onRecivedData(Uint8List.fromList([
-        ..."#".codeUnits,
-        ...(2 * sin(i++ / 2)).toString().codeUnits,
-        ..." ".codeUnits,
-        ...(i % 100).toString().codeUnits,
-        ..." ".codeUnits,
-        ...(i * 10 % 64700).toString().codeUnits,
-      ]));
-    });
+    // debugTimer = Timer.periodic(const Duration(milliseconds: 50), (Timer t) {
+    //   widget.controller.onRecivedData(Uint8List.fromList([
+    //     ..."#FF".codeUnits,
+    //     ...(2 * sin(i++ / 2)).toString().codeUnits,
+    //     ..."      ".codeUnits,
+    //     ...(i % 100).toString().codeUnits,
+    //     ..."".codeUnits,
+    //     ...(i * 10 % 64700).toString().codeUnits,
+    //   ]));
+    // });
 
     2 == 2;
+  }
+
+  void exportData() async {
+    ExportOption? option = await showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Exportcomponents(controller: chartController),
+        );
+      },
+    );
+
+    if (option == null) return;
+
+    chartController.exportData(option);
   }
 
   @override
   void dispose() {
     super.dispose();
 
-    if (debugTimer != null) {
-      debugTimer!.cancel();
-    }
+    // if (debugTimer != null) {
+    //   debugTimer!.cancel();
+    // }
   }
 
   @override
@@ -81,21 +93,21 @@ class _ChartPageState extends State<ChartPage> {
                       label: const Text("add chart"),
                       icon: const Icon(Icons.add)),
                   const SizedBox(width: 8),
-                  OutlinedButton.icon(onPressed: () {}, label: const Text("Disconnect"), icon: const Icon(Icons.power_off)),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(onPressed: () {}, label: const Text("Settings"), icon: const Icon(Icons.settings)),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(onPressed: () {}, label: const Text("View monitor"), icon: const Icon(Icons.monitor)),
+                  OutlinedButton.icon(onPressed: exportData, label: const Text("Export data"), icon: const Icon(Icons.import_export)),
+                  // const SizedBox(width: 8),
+                  // OutlinedButton.icon(onPressed: () {}, label: const Text("Settings"), icon: const Icon(Icons.settings)),
+                  // const SizedBox(width: 8),
+                  // OutlinedButton.icon(onPressed: () {}, label: const Text("View monitor"), icon: const Icon(Icons.monitor)),
                 ],
               ),
             ),
             Expanded(
-              child: ListenableBuilder(
-                listenable: chartController,
-                builder: (context, child) => Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Column(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ListenableBuilder(
+                    listenable: chartController,
+                    builder: (context, child) => Column(
                       children: List.generate(
                         chartController.chartList.length,
                         (index) {
@@ -117,26 +129,26 @@ class _ChartPageState extends State<ChartPage> {
                         },
                       ),
                     ),
-                    const VerticalDivider(),
-                    Expanded(
-                      child: ListView.builder(
-                        physics: disablePageScroll ? const NeverScrollableScrollPhysics() : null,
-                        itemBuilder: (context, index) => MouseRegion(
-                          onEnter: (_) {
-                            if (chartController.chartList[index].zoomEnabled) disablePageScroll = true;
-                            setState(() {});
-                          },
-                          onExit: (event) {
-                            disablePageScroll = false;
-                            setState(() {});
-                          },
-                          child: Chart(key: chartController.chartList[index].chartKey, data: chartController.chartList[index]),
-                        ),
-                        itemCount: chartController.chartList.length,
+                  ),
+                  const VerticalDivider(),
+                  Expanded(
+                    child: ListView.builder(
+                      physics: disablePageScroll ? const NeverScrollableScrollPhysics() : null,
+                      itemBuilder: (context, index) => MouseRegion(
+                        onEnter: (_) {
+                          if (chartController.chartList[index].zoomEnabled) disablePageScroll = true;
+                          setState(() {});
+                        },
+                        onExit: (event) {
+                          disablePageScroll = false;
+                          setState(() {});
+                        },
+                        child: Chart(key: chartController.chartList[index].chartKey, data: chartController.chartList[index]),
                       ),
+                      itemCount: chartController.chartList.length,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],

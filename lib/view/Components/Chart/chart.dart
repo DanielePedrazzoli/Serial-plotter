@@ -18,6 +18,7 @@ class ChartState extends State<Chart> {
     if (widget.data.isPaused) {
       return;
     }
+
     _chartSeriesController?.updateDataSource(addedDataIndex: widget.data.values.length - 1, removedDataIndex: 0);
   }
 

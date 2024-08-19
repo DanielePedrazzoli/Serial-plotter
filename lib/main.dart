@@ -7,7 +7,7 @@ void main() => runApp(
         child: MaterialApp(
           theme: ThemeData(
             useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.light),
             dropdownMenuTheme: const DropdownMenuThemeData(
               inputDecorationTheme: InputDecorationTheme(
                 constraints: BoxConstraints(maxHeight: 35),
