@@ -1,32 +1,26 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:serial_comunication/model/chart_data.dart';
 import 'package:serial_comunication/view/Components/ExportComponents.dart';
+import 'package:collection/collection.dart';
 
 class ChartController extends ChangeNotifier {
   List<String> messageHistory = [];
-  List<ChartData> chartList = [];
+  List<ChartData> plotData = [];
+  List<ChartData?> associationMap = [];
 
-  ChartController();
+  late Timer updateTimer;
 
-  /// Push new value on every chart avaiable
-  ///
-  /// The message must start with the corrisponding char, otherwise is not
-  /// considered a value of chart but a simple message
-  ///
-  /// The values are divided by the separator setted in the settings
-  ///
-  /// All the chart must add the value, if are avaiable less values then a
-  /// 0 will be pushed instead
-  ///
-  /// If there are more value than chart, the remaining values will be ignored
-  pushNewValue(String message) {
-    messageHistory.add(message);
+  ChartController() {
+    updateTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
+      updateChart();
+    });
+  }
 
-    if (!message.startsWith("#")) return;
-
+  List<double> parseMessage(String message) {
     // remove all the chars that are not numbers. Since this is a value plot,
     // only number, comma and dot are accepted
     message = message.replaceAll(RegExp(r"[a-z]\s*", caseSensitive: false), "");
@@ -37,25 +31,91 @@ class ChartController extends ChangeNotifier {
     // remove multiple spaces and replace them with single spaces
     message = message.replaceAll(RegExp(r"\s\s+", caseSensitive: false), " ");
 
-    List<double> values = message.split(" ").map((e) => double.tryParse(e) ?? 0).toList();
+    return message.split(" ").map((e) => double.tryParse(e) ?? 0).toList();
+  }
 
-    for (int i = 0; i < chartList.length; i++) {
-      double value = values.elementAtOrNull(i) ?? 0;
-      chartList[i].pushValue(value);
-      chartList[i].chartKey.currentState?.updateData();
+  /// Push a new value on the charts
+  ///
+  /// The message should start with a # char for be considered a valid value
+  ///
+  /// All the value must be separated by a space and double value are expected
+  /// to have a "." (dot) instead of "," comma for decimal separator
+  ///
+  /// All value are pushed in the corisponding chart:
+  /// - If no chart are avaiable, a new chart is created
+  /// - If a chart is avaiable, the value is pushed in the chart
+  /// - If the number of value are less than the number of charts already
+  /// existing, all the remaingin chart are pushed with a 0 value
+  ///
+  /// ### Example:
+  ///
+  /// #### Message 1
+  /// #1,2.5
+  ///
+  /// - chart 1 (new) ---> 1
+  /// - chart 2 (new) ---> 2.5
+  ///
+  /// #### Message 2
+  /// #2,2.5,3
+  ///
+  /// - chart 1 ---> 2
+  /// - chart 2 ---> 2.5
+  /// - chart 3 (new) ---> 3
+  ///
+  /// #### Message 3
+  /// #2
+  ///
+  /// - chart 1 ---> 2
+  /// - chart 2 ---> 0 (value not avaiable in the message)
+  /// - chart 3 ---> 0 (value not avaiable in the message)
+  ///
+  pushNewValue(String message) {
+    messageHistory.add(message);
+
+    if (!message.startsWith("#")) return;
+
+    List<double> values = parseMessage(message);
+
+    for (int i = 0; i < values.length; i++) {
+      ChartData? chartData = plotData.elementAtOrNull(i);
+
+      if (chartData == null) {
+        plotData.add(ChartData(id: i));
+      }
+      chartData?.pushValue(values[i]);
+    }
+
+    if (values.length < plotData.length) {
+      for (int i = values.length; i < plotData.length; i++) {
+        plotData[i].pushValue(0);
+      }
     }
 
     notifyListeners();
   }
 
   addNewChart() {
-    chartList.add(ChartData(id: chartList.length + 1));
+    associationMap.add(null);
+    notifyListeners();
   }
 
   removeChart(int index) {
-    chartList.removeAt(index);
+    associationMap.removeAt(index);
   }
 
+  assingDataToChart(int plotID, int charDataID) {
+    ChartData? data = plotData.firstWhereOrNull((var data) => data.id == charDataID);
+    if (data == null) return;
+
+    associationMap[plotID] = data;
+  }
+
+  /// Update visualization
+  void updateChart() {
+    notifyListeners();
+  }
+
+  /// Export related functions
   void exportData(ExportOption options) async {
     var filtredList = List.from(messageHistory);
 

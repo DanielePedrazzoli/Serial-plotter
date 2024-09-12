@@ -27,12 +27,13 @@ class _ConnectPageState extends State<ConnectPage> {
   void onPortSelected(String portName) async {
     SerialController controller = SerialController();
 
-    var isConnected = controller.connect(portName, baudRate);
+    // var isConnected = controller.connect(portName, baudRate);
+    controller.connect(portName, baudRate);
 
-    if (isConnected == false) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to connect to $portName")));
-      return;
-    }
+    // if (isConnected == false) {
+    //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to connect to $portName")));
+    //   return;
+    // }
 
     await Navigator.push(context, MaterialPageRoute(builder: (context) => ChartPage(controller: controller)));
     setState(() {});
